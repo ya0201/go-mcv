@@ -6,7 +6,6 @@ func main() {
 	cmd.Execute()
 }
 
-
 // package main
 
 // import (
@@ -21,4 +20,3 @@ func main() {
 //     fmt.Println(c.Msg)
 //   }
 // }
-

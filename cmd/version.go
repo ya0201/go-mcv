@@ -10,7 +10,7 @@ import (
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print version of go-mcv",
-	Long: `Print version of go-mcv`,
+	Long:  `Print version of go-mcv`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("v0.0.1")
 	},
