@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/ya0201/go-mcv/pkg/nozzle"
+	"github.com/ya0201/go-mcv/pkg/twitch"
 )
 
 // runCmd represents the run command
@@ -32,7 +32,7 @@ func init() {
 }
 
 func run() {
-	c, _ := nozzle.HelloNozzle().Pump()
+	c, _ := twitch.TwitchNozzle().Pump()
 	for c := range c {
 		fmt.Println(c.Msg)
 	}

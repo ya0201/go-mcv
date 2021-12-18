@@ -5,7 +5,7 @@ import (
 )
 
 type Nozzle interface {
-	Pump(chan<- comment.Comment) error
+	Pump() (<-chan comment.Comment, error)
 }
 
 func HelloNozzle() *helloNozzle {
