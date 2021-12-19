@@ -60,6 +60,7 @@ var (
 		cfg.EncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 			enc.AppendString(t.Local().Format("2006-01-02 15:04:05 MST"))
 		}
+		cfg.DisableStacktrace = true
 		return cfg
 	}()
 )
