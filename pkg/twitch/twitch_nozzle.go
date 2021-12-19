@@ -10,7 +10,7 @@ import (
 var _ nozzle.Nozzle = (*twitchNozzle)(nil)
 
 func TwitchNozzle() *twitchNozzle {
-	zap.S().Infof("TwitchNozzle initialized!")
+	zap.S().Info("TwitchNozzle initialized!")
 	return &twitchNozzle{}
 }
 

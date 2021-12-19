@@ -34,8 +34,9 @@ func init() {
 
 func run() {
 	c, _ := twitch.TwitchNozzle().Pump()
-	zap.S().Infof("Start pumping ...")
+	zap.S().Info("Start pumping ...")
 	for c := range c {
+		zap.S().Debug(c)
 		fmt.Println(c.Msg)
 	}
 }
