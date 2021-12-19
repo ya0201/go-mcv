@@ -3,12 +3,14 @@ package twitch
 import (
 	"github.com/ya0201/go-mcv/pkg/comment"
 	"github.com/ya0201/go-mcv/pkg/nozzle"
+	"go.uber.org/zap"
 )
 
 // twitchNozzleはNozzle interfaceを実装している
 var _ nozzle.Nozzle = (*twitchNozzle)(nil)
 
 func TwitchNozzle() *twitchNozzle {
+	zap.S().Infof("TwitchNozzle initialized!")
 	return &twitchNozzle{}
 }
 
