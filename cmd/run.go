@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/ya0201/go-mcv/pkg/twitch"
 	"go.uber.org/zap"
 )
@@ -35,8 +36,9 @@ func init() {
 func run() {
 	c, _ := twitch.TwitchNozzle().Pump()
 	zap.S().Info("Start pumping ...")
+	zap.S().Info(viper.Get("hoge"))
 	for c := range c {
-		zap.S().Debug(c)
+		zap.S().Debugf("%+v", c)
 		fmt.Println(c.Msg)
 	}
 }
