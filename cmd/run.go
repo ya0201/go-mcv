@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -27,6 +28,8 @@ func init() {
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// runCmd.PersistentFlags().String("foo", "", "A help for foo")
+	runCmd.PersistentFlags().String("twitch-channel-id", "", "channel id you want to get comments")
+	viper.BindPFlag("TWITCH_CHANNEL_ID", runCmd.PersistentFlags().Lookup("twitch-channel-id"))
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
@@ -34,9 +37,15 @@ func init() {
 }
 
 func run() {
-	c, _ := twitch.TwitchNozzle().Pump()
+	tn := twitch.TwitchNozzle()
+	if tn == nil {
+		zap.S().Info("TwitchNozzle is not initialized, and does not panic. So, ignoring twitch...")
+		return
+	}
+
+	c, _ := tn.Pump()
+	time.Sleep(time.Second * 10)
 	zap.S().Info("Start pumping ...")
-	zap.S().Info(viper.Get("hoge"))
 	for c := range c {
 		zap.S().Debugf("%+v", c)
 		fmt.Println(c.Msg)
