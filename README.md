@@ -1,5 +1,5 @@
 ## go-mcv
-multi comment viewer made with golang.<br><br>
+CUI multi comment viewer made with golang.<br><br>
 Currently, only twitch is supported.
 
 ### usage
