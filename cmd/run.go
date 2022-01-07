@@ -13,7 +13,7 @@ import (
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Runs go-mcv.",
-	Long:  `Runs go-mcv. Currently, twitch is only supported.`,
+	Long:  `Runs go-mcv. Currently, only twitch is supported.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		run()
 	},
