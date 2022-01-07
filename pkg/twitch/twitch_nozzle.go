@@ -1,12 +1,10 @@
 package twitch
 
 import (
-	"fmt"
-
-	"github.com/gorilla/websocket"
+	gti "github.com/gempir/go-twitch-irc/v2"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 
-	"github.com/spf13/viper"
 	"github.com/ya0201/go-mcv/pkg/comment"
 	"github.com/ya0201/go-mcv/pkg/nozzle"
 )
@@ -15,7 +13,7 @@ import (
 var _ nozzle.Nozzle = (*twitchNozzle)(nil)
 
 type twitchNozzle struct {
-	conn *websocket.Conn
+	client *gti.Client
 }
 
 func TwitchNozzle() *twitchNozzle {
@@ -24,35 +22,15 @@ func TwitchNozzle() *twitchNozzle {
 		zap.S().Infof("twitch channel id: %s", channel)
 	}
 
-	url := viper.GetString("TWITCH_IRC_SSL_WEBSOCKET_ENDPOINT")
-	if channel != "" && url == "" {
-		zap.S().Panic("Could not get TWITCH_IRC_SSL_WEBSOCKET_ENDPOINT.")
-	}
-
-	if channel == "" || url == "" {
+	if channel == "" {
 		return nil
 	}
 
-	conn, _, err := websocket.DefaultDialer.Dial(url, nil)
-	if err != nil {
-		zap.S().Panic(err)
-	}
-
-	err = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("PASS %s", viper.GetString("TWITCH_OAUTH_TOKEN"))))
-	if err != nil {
-		zap.S().Panic(err)
-	}
-	err = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("NICK %s", viper.GetString("TWITCH_NICKNAME"))))
-	if err != nil {
-		zap.S().Panic(err)
-	}
-	err = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("JOIN %s", viper.GetString("TWITCH_CHANNEL_ID"))))
-	if err != nil {
-		zap.S().Panic(err)
-	}
+	client := gti.NewAnonymousClient()
+	client.Join(viper.GetString("TWITCH_CHANNEL_ID"))
 
 	zap.S().Info("TwitchNozzle initialized!")
-	return &twitchNozzle{conn: conn}
+	return &twitchNozzle{client: client}
 }
 
 func (tn *twitchNozzle) Pump() (<-chan comment.Comment, error) {
@@ -60,27 +38,24 @@ func (tn *twitchNozzle) Pump() (<-chan comment.Comment, error) {
 		zap.S().Panic("TwitchNozzle is nil.")
 	}
 
-	go func() {
-		zap.S().Infof("%+v", *tn)
-		defer tn.conn.Close()
-		for {
-			_, message, err := tn.conn.ReadMessage()
-			if err != nil {
-				zap.S().Panic(err)
-				return
-			}
-			zap.S().Infof("recv: %s", message)
-		}
-	}()
+	zap.S().Debugf("twitch nozzle: %+v", *tn)
 	c := make(chan comment.Comment, 50)
 
-	comm := comment.Comment{
-		StreamingPlatform: "twitch",
-		Msg:               "hello, twitch nozzle!",
-	}
+	tn.client.OnPrivateMessage(func(message gti.PrivateMessage) {
+		zap.S().Debugf("received message (variable of go-twitch-irc.PrivateMessage): %+v\n", message)
+		comm := comment.Comment{
+			StreamingPlatform: "twitch",
+			Msg:               message.Message,
+		}
+		c <- comm
+	})
 
-	c <- comm
-	close(c)
+	go func() {
+		err := tn.client.Connect()
+		if err != nil {
+			zap.S().Panic(err)
+		}
+	}()
 
 	return c, nil
 }

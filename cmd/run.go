@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -44,10 +43,9 @@ func run() {
 	}
 
 	c, _ := tn.Pump()
-	time.Sleep(time.Second * 10)
 	zap.S().Info("Start pumping ...")
 	for c := range c {
 		zap.S().Debugf("%+v", c)
-		fmt.Println(c.Msg)
+		fmt.Printf("%s\n\n", c.Msg)
 	}
 }

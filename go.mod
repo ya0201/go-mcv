@@ -7,7 +7,7 @@ replace github.com/ya0201/go-mcv/pkg/nozzle => ./pkg/nozzle
 go 1.16
 
 require (
-	github.com/gorilla/websocket v1.4.2
+	github.com/gempir/go-twitch-irc/v2 v2.8.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.10.0
 	go.uber.org/zap v1.17.0

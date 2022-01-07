@@ -1,8 +1,2 @@
-TWITCH_IRC_SSL_WEBSOCKET_ENDPOINT: 'wss://irc-ws.chat.twitch.tv:443'
-
-# your twitch id
-TWITCH_NICKNAME: ''
-# your twitch oauth token
-TWITCH_OAUTH_TOKEN: ''
-# the channel id you want to view comments
+# the twitch channel id you want to view comments
 TWITCH_CHANNEL_ID: ''
