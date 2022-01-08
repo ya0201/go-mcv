@@ -16,7 +16,7 @@ type twitchNozzle struct {
 	client *gti.Client
 }
 
-func TwitchNozzle() *twitchNozzle {
+func NewTwitchNozzle() *twitchNozzle {
 	channel := viper.GetString("TWITCH_CHANNEL_ID")
 	if channel != "" {
 		zap.S().Infof("twitch channel id: %s", channel)
@@ -27,7 +27,7 @@ func TwitchNozzle() *twitchNozzle {
 	}
 
 	client := gti.NewAnonymousClient()
-	client.Join(viper.GetString("TWITCH_CHANNEL_ID"))
+	client.Join(channel)
 
 	zap.S().Info("TwitchNozzle initialized!")
 	return &twitchNozzle{client: client}

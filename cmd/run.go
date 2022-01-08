@@ -36,7 +36,7 @@ func init() {
 }
 
 func run() {
-	tn := twitch_nozzle.TwitchNozzle()
+	tn := twitch_nozzle.NewTwitchNozzle()
 	if tn == nil {
 		zap.S().Info("TwitchNozzle is not initialized, and does not panic. So, ignoring twitch...")
 		return

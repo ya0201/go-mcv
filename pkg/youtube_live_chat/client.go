@@ -11,7 +11,8 @@ import (
 )
 
 type SimpleLiveChatClient interface {
-	Connect(channelId string) error
+	Join(channelId string) error
+	Connect() error
 	OnMessage(onMessage func(msg *SimpleLiveChatMessage) error)
 }
 
@@ -19,7 +20,9 @@ type SimpleLiveChatClient interface {
 var _ SimpleLiveChatClient = (*simpleLiveChatClient)(nil)
 
 type simpleLiveChatClient struct {
-	onMessage func(msg *SimpleLiveChatMessage) error
+	onMessage           func(msg *SimpleLiveChatMessage) error
+	innertubeApiKey     string
+	initialContinuation string
 }
 
 func NewSimpleLiveChatClient() *simpleLiveChatClient {
@@ -63,12 +66,7 @@ func fetchLivePageSource(url string) ([]byte, error) {
 	return byteArray, nil
 }
 
-// https://qiita.com/pasta04/items/ec7ed6ded14d5af1663e
-func (this *simpleLiveChatClient) Connect(channelId string) error {
-	if this.onMessage == nil {
-		return fmt.Errorf("Fatal error occured when invoking simpleLiveChatClient.Connect(): callback function OnMessage is nil.")
-	}
-
+func (this *simpleLiveChatClient) Join(channelId string) error {
 	liveUrl := "https://www.youtube.com/channel/" + channelId + "/live"
 
 	source, err := fetchLivePageSource(liveUrl)
@@ -76,9 +74,19 @@ func (this *simpleLiveChatClient) Connect(channelId string) error {
 		return err
 	}
 
-	innertubeApiKey := parseInnertubeApiKey(source)
-	continuation := parseContinuation(source)
+	this.innertubeApiKey = parseInnertubeApiKey(source)
+	this.initialContinuation = parseContinuation(source)
+	return nil
+}
 
+// https://qiita.com/pasta04/items/ec7ed6ded14d5af1663e
+func (this *simpleLiveChatClient) Connect() error {
+	if this.onMessage == nil {
+		return fmt.Errorf("Fatal error occured when invoking simpleLiveChatClient.Connect(): callback function OnMessage is nil.")
+	}
+
+	innertubeApiKey := this.innertubeApiKey
+	continuation := this.initialContinuation
 	for {
 		time.Sleep(1 * time.Second)
 		liveChat, _ := fetchLiveChat(innertubeApiKey, continuation)
