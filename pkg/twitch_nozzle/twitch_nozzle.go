@@ -1,4 +1,4 @@
-package twitch
+package twitch_nozzle
 
 import (
 	gti "github.com/gempir/go-twitch-irc/v2"

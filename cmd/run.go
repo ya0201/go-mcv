@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/ya0201/go-mcv/pkg/twitch"
+	"github.com/ya0201/go-mcv/pkg/twitch_nozzle"
 	"go.uber.org/zap"
 )
 
@@ -36,7 +36,7 @@ func init() {
 }
 
 func run() {
-	tn := twitch.TwitchNozzle()
+	tn := twitch_nozzle.TwitchNozzle()
 	if tn == nil {
 		zap.S().Info("TwitchNozzle is not initialized, and does not panic. So, ignoring twitch...")
 		return
