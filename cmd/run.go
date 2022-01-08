@@ -5,7 +5,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/ya0201/go-mcv/pkg/comment"
 	"github.com/ya0201/go-mcv/pkg/twitch_nozzle"
+	"github.com/ya0201/go-mcv/pkg/youtube_nozzle"
 	"go.uber.org/zap"
 )
 
@@ -27,8 +29,10 @@ func init() {
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// runCmd.PersistentFlags().String("foo", "", "A help for foo")
-	runCmd.PersistentFlags().String("twitch-channel-id", "", "channel id you want to get comments")
+	runCmd.PersistentFlags().String("twitch-channel-id", "", "the twitch channel id you want to get comments")
 	viper.BindPFlag("TWITCH_CHANNEL_ID", runCmd.PersistentFlags().Lookup("twitch-channel-id"))
+	runCmd.PersistentFlags().String("youtube-channel-id", "", "the youtube channel id you want to get comments")
+	viper.BindPFlag("YOUTUBE_CHANNEL_ID", runCmd.PersistentFlags().Lookup("youtube-channel-id"))
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
@@ -37,15 +41,29 @@ func init() {
 
 func run() {
 	tn := twitch_nozzle.NewTwitchNozzle()
+	yn := youtube_nozzle.NewYoutubeNozzle()
+	var tc, yc <-chan comment.Comment
+
 	if tn == nil {
 		zap.S().Info("TwitchNozzle is not initialized, and does not panic. So, ignoring twitch...")
-		return
+	} else {
+		tc, _ = tn.Pump()
+	}
+	if yn == nil {
+		zap.S().Info("YoutubeNozzle is not initialized, and does not panic. So, ignoring youtube...")
+	} else {
+		yc, _ = yn.Pump()
 	}
 
-	c, _ := tn.Pump()
 	zap.S().Info("Start pumping ...")
-	for c := range c {
-		zap.S().Debugf("%+v", c)
-		fmt.Printf("%s\n\n", c.Msg)
+	for {
+		select {
+		case msg := <-tc:
+			zap.S().Debugf("%+v", msg)
+			fmt.Printf("%s\n\n", msg.Msg)
+		case msg := <-yc:
+			zap.S().Debugf("%+v", msg)
+			fmt.Printf("%s\n\n", msg.Msg)
+		}
 	}
 }
