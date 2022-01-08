@@ -43,6 +43,10 @@ func (tn *twitchNozzle) Pump() (<-chan comment.Comment, error) {
 
 	tn.client.OnPrivateMessage(func(message gti.PrivateMessage) {
 		zap.S().Debugf("received message (variable of go-twitch-irc.PrivateMessage): %+v\n", message)
+		if message.Message == "" {
+			return
+		}
+
 		comm := comment.Comment{
 			StreamingPlatform: "twitch",
 			Msg:               message.Message,

@@ -43,6 +43,10 @@ func (this *youtubeNozzle) Pump() (<-chan comment.Comment, error) {
 
 	this.client.OnMessage(func(message *youtube_live_chat.SimpleLiveChatMessage) error {
 		zap.S().Debugf("received message (variable of youtube_live_chat.SimpleLiveChatMessage): %+v\n", message)
+		if message.Msg == "" {
+			return nil
+		}
+
 		comm := comment.Comment{
 			StreamingPlatform: "youtube",
 			Msg:               message.Msg,
