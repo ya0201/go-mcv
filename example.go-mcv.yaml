@@ -1,2 +1,3 @@
-# the twitch channel id you want to view comments
+# the channel ids you want to view comments
 TWITCH_CHANNEL_ID: ''
+YOUTUBE_CHANNEL_ID: ''

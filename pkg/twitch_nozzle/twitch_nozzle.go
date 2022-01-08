@@ -1,4 +1,4 @@
-package twitch
+package twitch_nozzle
 
 import (
 	gti "github.com/gempir/go-twitch-irc/v2"
@@ -16,7 +16,7 @@ type twitchNozzle struct {
 	client *gti.Client
 }
 
-func TwitchNozzle() *twitchNozzle {
+func NewTwitchNozzle() *twitchNozzle {
 	channel := viper.GetString("TWITCH_CHANNEL_ID")
 	if channel != "" {
 		zap.S().Infof("twitch channel id: %s", channel)
@@ -27,7 +27,7 @@ func TwitchNozzle() *twitchNozzle {
 	}
 
 	client := gti.NewAnonymousClient()
-	client.Join(viper.GetString("TWITCH_CHANNEL_ID"))
+	client.Join(channel)
 
 	zap.S().Info("TwitchNozzle initialized!")
 	return &twitchNozzle{client: client}
@@ -43,6 +43,10 @@ func (tn *twitchNozzle) Pump() (<-chan comment.Comment, error) {
 
 	tn.client.OnPrivateMessage(func(message gti.PrivateMessage) {
 		zap.S().Debugf("received message (variable of go-twitch-irc.PrivateMessage): %+v\n", message)
+		if message.Message == "" {
+			return
+		}
+
 		comm := comment.Comment{
 			StreamingPlatform: "twitch",
 			Msg:               message.Message,
