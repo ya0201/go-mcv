@@ -51,6 +51,13 @@ func run() {
 		SetChangedFunc(func() {
 			app.Draw()
 		})
+	textView.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEnter {
+			textView.ScrollToEnd()
+			return nil
+		}
+		return event
+	})
 	logging.SetLoggerOutputToTview(textView)
 
 	tn := twitch_nozzle.NewTwitchNozzle()
@@ -88,6 +95,7 @@ func run() {
 	}
 
 	frame := tview.NewFrame(textView).
+		AddText("Enter: go to latest comments", false, tview.AlignCenter, tcell.ColorWhite).
 		AddText("Ctrl+C: exit", false, tview.AlignCenter, tcell.ColorWhite)
 	if err := app.SetRoot(frame, true).EnableMouse(true).Run(); err != nil {
 		panic(err)
