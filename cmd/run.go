@@ -50,6 +50,7 @@ func run() {
 		SetChangedFunc(func() {
 			app.Draw()
 		})
+	textView.SetScrollable(false)
 	logging.SetLoggerOutputToTview(textView)
 
 	tn := twitch_nozzle.NewTwitchNozzle()
