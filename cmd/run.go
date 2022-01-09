@@ -50,7 +50,7 @@ func run() {
 		SetChangedFunc(func() {
 			app.Draw()
 		})
-	logging.SetLoggerOutput(textView)
+	logging.SetLoggerOutputToTview(textView)
 
 	tn := twitch_nozzle.NewTwitchNozzle()
 	yn := youtube_nozzle.NewYoutubeNozzle()

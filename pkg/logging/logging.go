@@ -66,6 +66,22 @@ var (
 	VerboseTimeEncoder = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 		enc.AppendString(t.Local().Format("2006-01-02 15:04:05 MST"))
 	}
+	MyCapicalColorLevelEncoder = func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
+		var colorPrefix string
+		switch l {
+		case zapcore.InfoLevel:
+			colorPrefix = "[blue]"
+		case zapcore.WarnLevel:
+			colorPrefix = "[yellow]"
+		case zapcore.ErrorLevel:
+			colorPrefix = "[red]"
+		case zapcore.FatalLevel:
+			colorPrefix = "[red]"
+		default:
+			colorPrefix = ""
+		}
+		enc.AppendString(colorPrefix + l.CapitalString() + "[-]")
+	}
 )
 
 // AddLoggingFlags sets "--debug" and "--verbose" flags to the given *cobra.Command instance.
@@ -135,17 +151,18 @@ func replaceLogger(l *zap.Logger) {
 	zap.ReplaceGlobals(l)
 }
 
-func SetLoggerOutput(w io.Writer) {
+func SetLoggerOutputToTview(tview io.Writer) {
 	if IsDebug() {
 		encoder := zapcore.NewConsoleEncoder(zap.NewProductionEncoderConfig())
-		core := zapcore.NewCore(encoder, zapcore.AddSync(w), zapcore.DebugLevel)
+		core := zapcore.NewCore(encoder, zapcore.AddSync(tview), zapcore.DebugLevel)
 		replaceLogger(zap.New(core))
 	} else if IsVerbose() {
 		encoderConfig := zap.NewDevelopmentEncoderConfig()
-		encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		// encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		encoderConfig.EncodeLevel = MyCapicalColorLevelEncoder
 		encoderConfig.EncodeTime = VerboseTimeEncoder
 		encoder := zapcore.NewConsoleEncoder(encoderConfig)
-		core := zapcore.NewCore(encoder, zapcore.AddSync(w), zapcore.InfoLevel)
+		core := zapcore.NewCore(encoder, zapcore.AddSync(tview), zapcore.InfoLevel)
 		replaceLogger(zap.New(core))
 	}
 }
