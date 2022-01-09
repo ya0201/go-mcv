@@ -58,14 +58,11 @@ var (
 		cfg := zap.NewDevelopmentConfig()
 		cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 		cfg.Level = zap.NewAtomicLevelAt(zapcore.InfoLevel)
-		cfg.EncoderConfig.EncodeTime = VerboseTimeEncoder
+		cfg.EncoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
 		cfg.DisableStacktrace = true
 		return cfg
 	}()
 
-	VerboseTimeEncoder = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-		enc.AppendString(t.Local().Format("2006-01-02 15:04:05 MST"))
-	}
 	MyCapicalColorLevelEncoder = func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
 		var colorPrefix string
 		switch l {
@@ -158,9 +155,8 @@ func SetLoggerOutputToTview(tview io.Writer) {
 		replaceLogger(zap.New(core))
 	} else if IsVerbose() {
 		encoderConfig := zap.NewDevelopmentEncoderConfig()
-		// encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 		encoderConfig.EncodeLevel = MyCapicalColorLevelEncoder
-		encoderConfig.EncodeTime = VerboseTimeEncoder
+		encoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
 		encoder := zapcore.NewConsoleEncoder(encoderConfig)
 		core := zapcore.NewCore(encoder, zapcore.AddSync(tview), zapcore.InfoLevel)
 		replaceLogger(zap.New(core))
