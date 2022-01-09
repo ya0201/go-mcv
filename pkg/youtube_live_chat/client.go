@@ -76,7 +76,12 @@ func (this *simpleLiveChatClient) Join(channelId string) error {
 
 	this.innertubeApiKey = parseInnertubeApiKey(source)
 	this.initialContinuation = parseContinuation(source)
-	return nil
+
+	if this.initialContinuation == "" {
+		return fmt.Errorf("Could not get initial continuation for youtube live. Maybe: wrong channel id, or the channel is not streaming now.")
+	} else {
+		return nil
+	}
 }
 
 // https://qiita.com/pasta04/items/ec7ed6ded14d5af1663e

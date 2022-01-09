@@ -67,19 +67,24 @@ func run() {
 		yc, _ = yn.Pump()
 	}
 
-	zap.S().Info("Start pumping ...")
-	go func() {
-		for {
-			select {
-			case msg := <-tc:
-				zap.S().Debugf("%+v", msg)
-				fmt.Fprintf(textView, "%s\n\n", msg.Msg)
-			case msg := <-yc:
-				zap.S().Debugf("%+v", msg)
-				fmt.Fprintf(textView, "%s\n\n", msg.Msg)
+	if tn == nil && yn == nil {
+		zap.S().Info("All nozzles are nil. Do nothing.")
+		zap.S().Info("Press Ctrl+C to exit...")
+	} else {
+		zap.S().Info("Start pumping ...")
+		go func() {
+			for {
+				select {
+				case msg := <-tc:
+					zap.S().Debugf("%+v", msg)
+					fmt.Fprintf(textView, "%s\n\n", msg.Msg)
+				case msg := <-yc:
+					zap.S().Debugf("%+v", msg)
+					fmt.Fprintf(textView, "%s\n\n", msg.Msg)
+				}
 			}
-		}
-	}()
+		}()
+	}
 
 	if err := app.SetRoot(textView, true).EnableMouse(true).Run(); err != nil {
 		panic(err)
