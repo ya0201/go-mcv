@@ -24,6 +24,7 @@ package logging
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"time"
 
@@ -57,12 +58,14 @@ var (
 		cfg := zap.NewDevelopmentConfig()
 		cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 		cfg.Level = zap.NewAtomicLevelAt(zapcore.InfoLevel)
-		cfg.EncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-			enc.AppendString(t.Local().Format("2006-01-02 15:04:05 MST"))
-		}
+		cfg.EncoderConfig.EncodeTime = VerboseTimeEncoder
 		cfg.DisableStacktrace = true
 		return cfg
 	}()
+
+	VerboseTimeEncoder = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+		enc.AppendString(t.Local().Format("2006-01-02 15:04:05 MST"))
+	}
 )
 
 // AddLoggingFlags sets "--debug" and "--verbose" flags to the given *cobra.Command instance.
@@ -98,13 +101,15 @@ func AddLoggingFlags(cmd *cobra.Command) {
 // Debug sets a debug logger in global.
 func Debug() {
 	logging = LoggingDebug
-	replaceLogger(DebugLogConfig)
+	l := newLogger(DebugLogConfig)
+	replaceLogger(l)
 }
 
 // Verbose sets a verbose logger in global.
 func Verbose() {
 	logging = LoggingVerbose
-	replaceLogger(VerboseLogConfig)
+	l := newLogger(VerboseLogConfig)
+	replaceLogger(l)
 }
 
 // IsDebug returns true if a debug logger is used.
@@ -116,12 +121,31 @@ func IsVerbose() bool { return logging == LoggingVerbose }
 // Logging returns a current logging mode.
 func Logging() LoggingMode { return logging }
 
-func replaceLogger(cfg zap.Config) {
+func newLogger(cfg zap.Config) *zap.Logger {
 	l, err := cfg.Build()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to initialize a debug logger: %v\n", err)
 	}
 
+	return l
+}
+
+func replaceLogger(l *zap.Logger) {
 	l.Sync()
 	zap.ReplaceGlobals(l)
+}
+
+func SetLoggerOutput(w io.Writer) {
+	if IsDebug() {
+		encoder := zapcore.NewConsoleEncoder(zap.NewProductionEncoderConfig())
+		core := zapcore.NewCore(encoder, zapcore.AddSync(w), zapcore.DebugLevel)
+		replaceLogger(zap.New(core))
+	} else if IsVerbose() {
+		encoderConfig := zap.NewDevelopmentEncoderConfig()
+		encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		encoderConfig.EncodeTime = VerboseTimeEncoder
+		encoder := zapcore.NewConsoleEncoder(encoderConfig)
+		core := zapcore.NewCore(encoder, zapcore.AddSync(w), zapcore.InfoLevel)
+		replaceLogger(zap.New(core))
+	}
 }

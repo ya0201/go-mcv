@@ -3,9 +3,11 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/ya0201/go-mcv/pkg/comment"
+	"github.com/ya0201/go-mcv/pkg/logging"
 	"github.com/ya0201/go-mcv/pkg/twitch_nozzle"
 	"github.com/ya0201/go-mcv/pkg/youtube_nozzle"
 	"go.uber.org/zap"
@@ -40,6 +42,16 @@ func init() {
 }
 
 func run() {
+	app := tview.NewApplication()
+	textView := tview.NewTextView().
+		SetDynamicColors(true).
+		SetRegions(true).
+		SetWordWrap(true).
+		SetChangedFunc(func() {
+			app.Draw()
+		})
+	logging.SetLoggerOutput(textView)
+
 	tn := twitch_nozzle.NewTwitchNozzle()
 	yn := youtube_nozzle.NewYoutubeNozzle()
 	var tc, yc <-chan comment.Comment
@@ -56,14 +68,20 @@ func run() {
 	}
 
 	zap.S().Info("Start pumping ...")
-	for {
-		select {
-		case msg := <-tc:
-			zap.S().Debugf("%+v", msg)
-			fmt.Printf("%s\n\n", msg.Msg)
-		case msg := <-yc:
-			zap.S().Debugf("%+v", msg)
-			fmt.Printf("%s\n\n", msg.Msg)
+	go func() {
+		for {
+			select {
+			case msg := <-tc:
+				zap.S().Debugf("%+v", msg)
+				fmt.Fprintf(textView, "%s\n\n", msg.Msg)
+			case msg := <-yc:
+				zap.S().Debugf("%+v", msg)
+				fmt.Fprintf(textView, "%s\n\n", msg.Msg)
+			}
 		}
+	}()
+
+	if err := app.SetRoot(textView, true).EnableMouse(true).Run(); err != nil {
+		panic(err)
 	}
 }
