@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -86,7 +87,9 @@ func run() {
 		}()
 	}
 
-	if err := app.SetRoot(textView, true).EnableMouse(true).Run(); err != nil {
+	frame := tview.NewFrame(textView).
+		AddText("Ctrl+C: exit", false, tview.AlignCenter, tcell.ColorWhite)
+	if err := app.SetRoot(frame, true).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
 }
