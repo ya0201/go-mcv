@@ -87,9 +87,10 @@ func (this *simpleLiveChatClient) Connect() error {
 
 	innertubeApiKey := this.innertubeApiKey
 	continuation := this.initialContinuation
+	liveChat, _ := fetchLiveChat(innertubeApiKey, continuation)
 	for {
-		time.Sleep(1 * time.Second)
-		liveChat, _ := fetchLiveChat(innertubeApiKey, continuation)
+		continuation = parseNextContinuation(liveChat)
+		liveChat, _ = fetchLiveChat(innertubeApiKey, continuation)
 		for _, msg := range liveChat.ContinuationContents.LiveChatContinuation.Actions {
 			msgruns := msg.AddChatItemAction.Item.LiveChatTextMessageRenderer.Message.Runs
 			if len(msgruns) > 0 {
@@ -98,7 +99,7 @@ func (this *simpleLiveChatClient) Connect() error {
 				this.onMessage(simpleLiveChatMessage)
 			}
 		}
-		continuation = parseNextContinuation(liveChat)
+		time.Sleep(1 * time.Second)
 	}
 
 	return nil
