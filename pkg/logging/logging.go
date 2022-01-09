@@ -45,23 +45,6 @@ const (
 var (
 	logging = LoggingNop
 
-	// DebugLogConfig is used to generate a *zap.Logger for debug mode.
-	DebugLogConfig = func() zap.Config {
-		cfg := zap.NewProductionConfig()
-		cfg.Level = zap.NewAtomicLevelAt(zapcore.DebugLevel)
-		cfg.DisableStacktrace = true
-		return cfg
-	}()
-	// VerboseLogConfig is used to generate a *zap.Logger for verbose mode.
-	VerboseLogConfig = func() zap.Config {
-		cfg := zap.NewDevelopmentConfig()
-		cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-		cfg.Level = zap.NewAtomicLevelAt(zapcore.InfoLevel)
-		cfg.EncoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
-		cfg.DisableStacktrace = true
-		return cfg
-	}()
-
 	MyCapicalColorLevelEncoder = func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
 		var colorPrefix string
 		switch l {
@@ -113,14 +96,14 @@ func AddLoggingFlags(cmd *cobra.Command) {
 // Debug sets a debug logger in global.
 func Debug() {
 	logging = LoggingDebug
-	l := newLogger(DebugLogConfig)
+	l := newDebugLogger(os.Stderr)
 	replaceLogger(l)
 }
 
 // Verbose sets a verbose logger in global.
 func Verbose() {
 	logging = LoggingVerbose
-	l := newLogger(VerboseLogConfig)
+	l := newVerboseLogger(os.Stderr)
 	replaceLogger(l)
 }
 
@@ -133,13 +116,20 @@ func IsVerbose() bool { return logging == LoggingVerbose }
 // Logging returns a current logging mode.
 func Logging() LoggingMode { return logging }
 
-func newLogger(cfg zap.Config) *zap.Logger {
-	l, err := cfg.Build()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to initialize a debug logger: %v\n", err)
-	}
+func newDebugLogger(w io.Writer) *zap.Logger {
+	encoder := zapcore.NewConsoleEncoder(zap.NewProductionEncoderConfig())
+	core := zapcore.NewCore(encoder, zapcore.AddSync(w), zapcore.DebugLevel)
 
-	return l
+	return zap.New(core)
+}
+
+func newVerboseLogger(w io.Writer) *zap.Logger {
+	encoderConfig := zap.NewDevelopmentEncoderConfig()
+	encoderConfig.EncodeLevel = MyCapicalColorLevelEncoder
+	encoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
+	encoder := zapcore.NewConsoleEncoder(encoderConfig)
+	core := zapcore.NewCore(encoder, zapcore.AddSync(w), zapcore.InfoLevel)
+	return zap.New(core)
 }
 
 func replaceLogger(l *zap.Logger) {
@@ -149,15 +139,8 @@ func replaceLogger(l *zap.Logger) {
 
 func SetLoggerOutputToTview(tview io.Writer) {
 	if IsDebug() {
-		encoder := zapcore.NewConsoleEncoder(zap.NewProductionEncoderConfig())
-		core := zapcore.NewCore(encoder, zapcore.AddSync(tview), zapcore.DebugLevel)
-		replaceLogger(zap.New(core))
+		replaceLogger(newDebugLogger(tview))
 	} else if IsVerbose() {
-		encoderConfig := zap.NewDevelopmentEncoderConfig()
-		encoderConfig.EncodeLevel = MyCapicalColorLevelEncoder
-		encoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
-		encoder := zapcore.NewConsoleEncoder(encoderConfig)
-		core := zapcore.NewCore(encoder, zapcore.AddSync(tview), zapcore.InfoLevel)
-		replaceLogger(zap.New(core))
+		replaceLogger(newVerboseLogger(tview))
 	}
 }
