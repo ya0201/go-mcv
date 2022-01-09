@@ -27,10 +27,16 @@ func NewYoutubeNozzle() *youtubeNozzle {
 	}
 
 	client := youtube_live_chat.NewSimpleLiveChatClient()
-	client.Join(channel)
+	err := client.Join(channel)
 
-	zap.S().Info("YoutubeNozzle initialized!")
-	return &youtubeNozzle{client: client}
+	if err != nil {
+		zap.S().Warn(err.Error())
+		return nil
+	} else {
+		zap.S().Info("YoutubeNozzle initialized!")
+		return &youtubeNozzle{client: client}
+	}
+
 }
 
 func (this *youtubeNozzle) Pump() (<-chan comment.Comment, error) {
