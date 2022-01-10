@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -84,11 +85,9 @@ func run() {
 			for {
 				select {
 				case msg := <-tc:
-					zap.S().Debugf("%+v", msg)
-					fmt.Fprintf(textView, "%s\n\n", msg.Msg)
+					printMsg(textView, msg)
 				case msg := <-yc:
-					zap.S().Debugf("%+v", msg)
-					fmt.Fprintf(textView, "%s\n\n", msg.Msg)
+					printMsg(textView, msg)
 				}
 			}
 		}()
@@ -100,4 +99,18 @@ func run() {
 	if err := app.SetRoot(frame, true).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
+}
+
+func printMsg(w io.Writer, msg comment.Comment) {
+	zap.S().Debugf("%+v", msg)
+
+	var msgPrefix string
+	switch msg.StreamingPlatform {
+	case "twitch":
+		msgPrefix = "[blue]TW[-]"
+	case "youtube":
+		msgPrefix = "[red]YT[-]"
+	}
+
+	fmt.Fprintf(w, "%s %s\n\n", msgPrefix, msg.Msg)
 }
