@@ -66,17 +66,17 @@ var (
 		var colorPrefix string
 		switch l {
 		case zapcore.InfoLevel:
-			colorPrefix = "[blue]"
+			colorPrefix = "[white:blue]"
 		case zapcore.WarnLevel:
-			colorPrefix = "[yellow]"
+			colorPrefix = "[white:yellow]"
 		case zapcore.ErrorLevel:
-			colorPrefix = "[red]"
+			colorPrefix = "[white:red]"
 		case zapcore.FatalLevel:
-			colorPrefix = "[red]"
+			colorPrefix = "[white:red]"
 		default:
 			colorPrefix = ""
 		}
-		enc.AppendString(colorPrefix + l.CapitalString() + "[-]")
+		enc.AppendString(colorPrefix + l.CapitalString() + "[-:-:-]")
 	}
 )
 
