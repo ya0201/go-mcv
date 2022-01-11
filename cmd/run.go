@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/miiton/kanaconv"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -116,7 +117,7 @@ func printMsg(w io.Writer, msg comment.Comment) {
 		msgPrefix = "[red]YT[-]"
 	}
 
-	fmt.Fprintf(w, "%s %s\n\n", msgPrefix, msg.Msg)
+	fmt.Fprintf(w, "%s %s\n\n", msgPrefix, kanaconv.SmartConv(msg.Msg))
 }
 
 func initCommentFilter(nozzle nozzle.Nozzle) {
