@@ -3,6 +3,7 @@ package comment
 import (
 	"regexp"
 	"strings"
+	"unicode/utf8"
 )
 
 type CommentFilter struct {
@@ -23,7 +24,7 @@ func NewCommentFilter(maxLength int, ngWords []string, ngRegexpStrings []string)
 }
 
 func (this *CommentFilter) IsInvalid(msg Comment) bool {
-	if len(msg.Msg) > this.MaxLength {
+	if utf8.RuneCountInString(msg.Msg) > this.MaxLength {
 		return true
 	}
 
