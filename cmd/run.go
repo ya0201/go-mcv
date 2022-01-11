@@ -60,6 +60,7 @@ func run() {
 		}
 		return event
 	})
+	textView.SetMaxLines(500)
 	logging.SetLoggerOutputToTview(textView)
 
 	tn := twitch_nozzle.NewTwitchNozzle()
