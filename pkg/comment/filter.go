@@ -11,10 +11,10 @@ type CommentFilter struct {
 	NgRegexps []*regexp.Regexp
 }
 
-func NewCommentFilter(maxLength int, ngWords []string, ngRegexpsString []string) *CommentFilter {
+func NewCommentFilter(maxLength int, ngWords []string, ngRegexpStrings []string) *CommentFilter {
 	var regexps []*regexp.Regexp
 
-	for _, s := range ngRegexpsString {
+	for _, s := range ngRegexpStrings {
 		r := regexp.MustCompile(s)
 		regexps = append(regexps, r)
 	}

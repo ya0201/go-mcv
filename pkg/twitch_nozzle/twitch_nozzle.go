@@ -13,7 +13,8 @@ import (
 var _ nozzle.Nozzle = (*twitchNozzle)(nil)
 
 type twitchNozzle struct {
-	client *gti.Client
+	client        *gti.Client
+	commentFilter *comment.CommentFilter
 }
 
 func NewTwitchNozzle() *twitchNozzle {
@@ -31,6 +32,10 @@ func NewTwitchNozzle() *twitchNozzle {
 
 	zap.S().Info("TwitchNozzle initialized!")
 	return &twitchNozzle{client: client}
+}
+
+func (this *twitchNozzle) SetCommentFilter(cf *comment.CommentFilter) {
+	this.commentFilter = cf
 }
 
 func (tn *twitchNozzle) Pump() (<-chan comment.Comment, error) {
@@ -51,7 +56,12 @@ func (tn *twitchNozzle) Pump() (<-chan comment.Comment, error) {
 			StreamingPlatform: "twitch",
 			Msg:               message.Message,
 		}
-		c <- comm
+
+		if tn.commentFilter != nil && tn.commentFilter.IsInvalid(comm) {
+			return
+		} else {
+			c <- comm
+		}
 	})
 
 	go func() {
