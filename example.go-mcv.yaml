@@ -1,3 +1,10 @@
 # the channel ids you want to view comments
 TWITCH_CHANNEL_ID: ''
 YOUTUBE_CHANNEL_ID: ''
+
+# values for comment filtering
+COMMENT_FILTER_MAX_LENGTH: 100
+COMMENT_FILTER_NG_WORDS:
+  - 'KEKW'
+COMMENT_FILTER_NG_REGEXP_STRINGS:
+  - '^.*damn.*$'
