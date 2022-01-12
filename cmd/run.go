@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/miiton/kanaconv"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -59,20 +60,24 @@ func run() {
 		}
 		return event
 	})
+	textView.SetMaxLines(500)
 	logging.SetLoggerOutputToTview(textView)
 
 	tn := twitch_nozzle.NewTwitchNozzle()
 	yn := youtube_nozzle.NewYoutubeNozzle()
 	var tc, yc <-chan comment.Comment
 
+	filter := initCommentFilter()
 	if tn == nil {
 		zap.S().Info("TwitchNozzle is not initialized, and does not panic. So, ignoring twitch...")
 	} else {
+		tn.SetCommentFilter(filter)
 		tc, _ = tn.Pump()
 	}
 	if yn == nil {
 		zap.S().Info("YoutubeNozzle is not initialized, and does not panic. So, ignoring youtube...")
 	} else {
+		yn.SetCommentFilter(filter)
 		yc, _ = yn.Pump()
 	}
 
@@ -94,7 +99,7 @@ func run() {
 	}
 
 	frame := tview.NewFrame(textView).
-		AddText("Enter: go to latest comments", false, tview.AlignCenter, tcell.ColorWhite).
+		AddText("Enter: scroll to latest comments", false, tview.AlignCenter, tcell.ColorWhite).
 		AddText("Ctrl+C: exit", false, tview.AlignCenter, tcell.ColorWhite)
 	if err := app.SetRoot(frame, true).EnableMouse(true).Run(); err != nil {
 		panic(err)
@@ -112,5 +117,14 @@ func printMsg(w io.Writer, msg comment.Comment) {
 		msgPrefix = "[red]YT[-]"
 	}
 
-	fmt.Fprintf(w, "%s %s\n\n", msgPrefix, msg.Msg)
+	fmt.Fprintf(w, "%s %s\n\n", msgPrefix, kanaconv.SmartConv(msg.Msg))
+}
+
+func initCommentFilter() *comment.CommentFilter {
+	maxLength := viper.GetInt("COMMENT_FILTER_MAX_LENGTH")
+	ngWords := viper.GetStringSlice("COMMENT_FILTER_NG_WORDS")
+	ngRegexpStrings := viper.GetStringSlice("COMMENT_FILTER_NG_REGEXP_STRINGS")
+
+	filter := comment.NewCommentFilter(maxLength, ngWords, ngRegexpStrings)
+	return filter
 }

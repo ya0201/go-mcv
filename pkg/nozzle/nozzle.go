@@ -6,7 +6,11 @@ import (
 
 type Nozzle interface {
 	Pump() (<-chan comment.Comment, error)
+	SetCommentFilter(*comment.CommentFilter)
 }
+
+// helloNozzleはNozzle interfaceを実装している
+var _ Nozzle = (*helloNozzle)(nil)
 
 func HelloNozzle() *helloNozzle {
 	return &helloNozzle{}
@@ -27,4 +31,7 @@ func (hn *helloNozzle) Pump() (<-chan comment.Comment, error) {
 	close(c)
 
 	return c, nil
+}
+
+func (this *helloNozzle) SetCommentFilter(cf *comment.CommentFilter) {
 }

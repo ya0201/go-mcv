@@ -13,7 +13,8 @@ import (
 var _ nozzle.Nozzle = (*youtubeNozzle)(nil)
 
 type youtubeNozzle struct {
-	client youtube_live_chat.SimpleLiveChatClient
+	client        youtube_live_chat.SimpleLiveChatClient
+	commentFilter *comment.CommentFilter
 }
 
 func NewYoutubeNozzle() *youtubeNozzle {
@@ -39,6 +40,10 @@ func NewYoutubeNozzle() *youtubeNozzle {
 
 }
 
+func (this *youtubeNozzle) SetCommentFilter(cf *comment.CommentFilter) {
+	this.commentFilter = cf
+}
+
 func (this *youtubeNozzle) Pump() (<-chan comment.Comment, error) {
 	if this == nil {
 		zap.S().Panic("YoutubeNozzle is nil.")
@@ -57,8 +62,12 @@ func (this *youtubeNozzle) Pump() (<-chan comment.Comment, error) {
 			StreamingPlatform: "youtube",
 			Msg:               message.Msg,
 		}
-		c <- comm
-		return nil
+		if this.commentFilter != nil && this.commentFilter.IsInvalid(comm) {
+			return nil
+		} else {
+			c <- comm
+			return nil
+		}
 	})
 
 	go func() {
