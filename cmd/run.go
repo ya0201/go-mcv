@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/viper"
 	"github.com/ya0201/go-mcv/pkg/comment"
 	"github.com/ya0201/go-mcv/pkg/logging"
-	"github.com/ya0201/go-mcv/pkg/nozzle"
 	"github.com/ya0201/go-mcv/pkg/twitch_nozzle"
 	"github.com/ya0201/go-mcv/pkg/youtube_nozzle"
 	"go.uber.org/zap"
@@ -68,16 +67,17 @@ func run() {
 	yn := youtube_nozzle.NewYoutubeNozzle()
 	var tc, yc <-chan comment.Comment
 
+	filter := initCommentFilter()
 	if tn == nil {
 		zap.S().Info("TwitchNozzle is not initialized, and does not panic. So, ignoring twitch...")
 	} else {
-		initCommentFilter(tn)
+		tn.SetCommentFilter(filter)
 		tc, _ = tn.Pump()
 	}
 	if yn == nil {
 		zap.S().Info("YoutubeNozzle is not initialized, and does not panic. So, ignoring youtube...")
 	} else {
-		initCommentFilter(yn)
+		yn.SetCommentFilter(filter)
 		yc, _ = yn.Pump()
 	}
 
@@ -120,11 +120,11 @@ func printMsg(w io.Writer, msg comment.Comment) {
 	fmt.Fprintf(w, "%s %s\n\n", msgPrefix, kanaconv.SmartConv(msg.Msg))
 }
 
-func initCommentFilter(nozzle nozzle.Nozzle) {
+func initCommentFilter() *comment.CommentFilter {
 	maxLength := viper.GetInt("COMMENT_FILTER_MAX_LENGTH")
 	ngWords := viper.GetStringSlice("COMMENT_FILTER_NG_WORDS")
 	ngRegexpStrings := viper.GetStringSlice("COMMENT_FILTER_NG_REGEXP_STRINGS")
 
 	filter := comment.NewCommentFilter(maxLength, ngWords, ngRegexpStrings)
-	nozzle.SetCommentFilter(filter)
+	return filter
 }
