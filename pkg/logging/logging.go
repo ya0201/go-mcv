@@ -51,7 +51,7 @@ var (
 		case zapcore.InfoLevel:
 			colorPrefix = "[white:blue]"
 		case zapcore.WarnLevel:
-			colorPrefix = "[white:yellow]"
+			colorPrefix = "[black:yellow]"
 		case zapcore.ErrorLevel:
 			colorPrefix = "[white:red]"
 		case zapcore.FatalLevel:
