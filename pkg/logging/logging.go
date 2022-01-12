@@ -117,9 +117,10 @@ func IsVerbose() bool { return logging == LoggingVerbose }
 func Logging() LoggingMode { return logging }
 
 func newDebugLogger(w io.Writer) *zap.Logger {
-	encoder := zapcore.NewConsoleEncoder(zap.NewProductionEncoderConfig())
+	encoderConfig := zap.NewProductionEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
+	encoder := zapcore.NewJSONEncoder(encoderConfig)
 	core := zapcore.NewCore(encoder, zapcore.AddSync(w), zapcore.DebugLevel)
-
 	return zap.New(core)
 }
 
